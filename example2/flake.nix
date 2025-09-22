@@ -3,6 +3,8 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     systems.url = "github:nix-systems/default";
     rust-flake.url = "../";
+    rust-flakes.inputs.nixpkgs.follows = "nixpkgs";
+    rust-flakes.inputs.nixpkgs.systems = "systems";
   };
   outputs =
     inputs:

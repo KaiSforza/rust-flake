@@ -10,6 +10,10 @@ or `devShells` output. To enable a nice devShell, it should only require
 following the flake example below. A `rust-toolchain.toml` file is required, and
 is common in many rust projects.
 
+Below is a simple example. See the `example/` directory for a full directory of
+this example. `example2` has a more complex example with merging into another
+flake output attribute set.
+
 ## Example
 
 ```nix
@@ -97,3 +101,22 @@ devshell.
 ### Optional: `name_override`
 
 Allows overriding the name from the `Cargo.toml` file.
+
+## Special situations
+
+### Different systems
+
+Use the `nix-systems` flakes and set this to override the systems that
+rust-flake will create outputs for:
+
+```nix
+{
+  # ...
+  inputs.systems.url = "github:nix-systems/default-linux";
+  inputs.rust-flakes.inputs.systems.follows = "systems";
+  # ...
+}
+```
+
+This will only create outputs for `x86_64-linux` and `aarch64-linux`, not
+`*-darwin`.
