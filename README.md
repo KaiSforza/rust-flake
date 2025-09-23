@@ -16,6 +16,8 @@ flake output attribute set.
 
 Note, right now this only handles simple rust projects.
 
+[ro]: https://github.com/oxalica/rust-overlay
+
 ## Example
 
 ```nix
