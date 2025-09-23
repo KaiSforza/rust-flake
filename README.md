@@ -58,9 +58,6 @@ This will create a few things:
 
 ## Options to `rust-flake` function
 
-None of these are required. The example only requires the `./.` because it's in
-a subdirectory of another flake.
-
 ### `root`
 
 The root directory of the rust crate, should usually be `./.`. This is the only
@@ -107,7 +104,7 @@ Overrides for just the devshell, having these in the builder causes the
 toolchain to become a runtime dependency, so it's only added by default to the
 devshell.
 
-### Optional: `name_override`
+### `name_override = (cargoToml.package.name)`
 
 Allows overriding the name from the `Cargo.toml` file.
 
