@@ -14,9 +14,12 @@ Below is a simple example. See the `example/` directory for a full directory of
 this example. `example2` has a more complex example with merging into another
 flake output attribute set.
 
+Note, right now this only handles simple rust projects.
+
 ## Example
 
 ```nix
+# ./flake.nix
 {
   inputs.rust-flake.url = "github:KaiSforza/rust-flake";
   outputs =
@@ -25,12 +28,15 @@ flake output attribute set.
       inherit (inputs.rust-flake.lib) rust-flake rust-flakes;
     in
     rust-flakes [
-      (rust-flake { })
+      (rust-flake {
+        root = ./.;
+      })
     ];
 }
 ```
 
 ```toml
+# ./rust-toolchain.toml
 [toolchain]
 channel = "stable"
 ```
@@ -53,9 +59,10 @@ This will create a few things:
 None of these are required. The example only requires the `./.` because it's in
 a subdirectory of another flake.
 
-### `root = ./.`
+### `root`
 
-The root directory of the rust crate.
+The root directory of the rust crate, should usually be `./.`. This is the only
+_required_ setting.
 
 ### `repo-root = root`
 

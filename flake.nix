@@ -74,7 +74,7 @@
       rust-flake =
         {
           # The root of your rust crate
-          root ? ./.,
+          root,
           repo-root ? root,
           # Extra files to include in the source
           extra_files ? [ ],
