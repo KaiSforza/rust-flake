@@ -76,6 +76,8 @@
           # The root of your rust crate
           root,
           repo-root ? root,
+          # Use the workspace instead of the normal package.* info
+          workspace ? false,
           # Extra files to include in the source
           extra_files ? [ ],
           # The `deps-*` variables should be functions that take a package set as
@@ -102,7 +104,11 @@
         let
           ## Be careful editing anything below here. ##
           # Stores a nix object from the Cargo.toml file
-          cargoToml = builtins.fromTOML (builtins.readFile (root + /Cargo.toml));
+          cargoToml =
+            let
+              c = builtins.fromTOML (builtins.readFile (root + /Cargo.toml));
+            in
+            if workspace then c.workspace else c;
           pname = rustArgs.name_override or cargoToml.package.name;
           name = pname;
 
