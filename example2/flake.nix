@@ -36,6 +36,7 @@
           # With system specific packages
           deps-build = p: with p; ([ hello ] ++ (if stdenv.isLinux then [ fuse3 ] else [ darwin.icu ]));
           deps-run = p: with p; [ ponysay ];
+          deps-dev = p: with p; [ just ];
           dev-overrides = {
             extensions = [
               "rust-analyzer"

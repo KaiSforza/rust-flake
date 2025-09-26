@@ -84,6 +84,8 @@
           deps-build ? _: [ ],
           # Runtime dependencies (`buildInputs`)
           deps-run ? _: [ ],
+          # Development dependencies (for the devShells)
+          deps-dev ? _: [ ],
           # Will also create a default output.
           is-default ? true,
           # Specify an alternate toolchain file (useful for sub-crates)
@@ -190,7 +192,7 @@
             overlays = {
               default = pkg-overlay;
             };
-            all-deps = p: (deps-build p) ++ (deps-run p);
+            all-deps = p: (deps-build p) ++ (deps-run p) ++ (deps-dev p);
           };
         in
         final-outputs (if is-default then "default" else name);
