@@ -79,15 +79,15 @@
           # Use the workspace instead of the normal package.* info
           workspace ? false,
           # Extra files to include in the source
-          extra_files ? [ ],
+          extra-files ? [ ],
           # The `deps-*` variables should be functions that take a package set as
           # a variable.
           # Dependencies required only for the build (`nativeBuildInputs`)
-          deps-build ? _: [ ],
+          deps-build ? _: _: [ ],
           # Runtime dependencies (`buildInputs`)
-          deps-run ? _: [ ],
+          deps-run ? _: _: [ ],
           # Development dependencies (for the devShells)
-          deps-dev ? _: [ ],
+          deps-dev ? _: _: [ ],
           # Will also create a default output.
           is-default ? true,
           # Specify an alternate toolchain file (useful for sub-crates)
@@ -99,6 +99,7 @@
               "rust-analyzer"
             ];
           },
+          pkg-overrides ? _: _: { },
           ...
         }@rustArgs:
         let
@@ -109,7 +110,7 @@
               c = builtins.fromTOML (builtins.readFile (root + /Cargo.toml));
             in
             if workspace then c.workspace else c;
-          pname = rustArgs.name_override or cargoToml.package.name;
+          pname = rustArgs.name-override or cargoToml.package.name;
           name = pname;
 
           # Easy way to get just the rust source stuff that we care about without
@@ -130,7 +131,7 @@
                     (maybeMissing (root + /Cargo.lock))
                     (maybeMissing (root + /src))
                   ]
-                  ++ (map maybeMissing extra_files)
+                  ++ (map maybeMissing extra-files)
                 )
               )
             );
@@ -148,40 +149,43 @@
                 cargo = final.rustToolchain';
                 rustc = final.rustToolchain';
               };
-              "${name}" = final.rustPlatform'.buildRustPackage (
-                {
-                  inherit pname;
-                  version = cargoToml.package.version;
-                  src = rustSrc;
-                  cargoLock.lockFile = root + /Cargo.lock;
+              "${name}" = (
+                final.rustPlatform'.buildRustPackage (
+                  {
+                    inherit pname;
+                    version = cargoToml.package.version;
+                    src = rustSrc;
+                    cargoLock.lockFile = root + /Cargo.lock;
 
-                  meta = (
-                    {
-                      homepage = cargoToml.package.repository or "https://example.com";
-                      mainProgram = name;
+                    meta = (
+                      {
+                        homepage = cargoToml.package.repository or "https://example.com";
+                        mainProgram = name;
 
-                      inherit (cargoToml.package) description;
-                    }
-                    // {
-                      description = (cargoToml.package.description or "default description");
-                    }
-                  );
-                }
-                // (
-                  if (deps-build final) != [ ] then
-                    {
-                      nativeBuildInputs = deps-build final;
-                    }
-                  else
-                    { }
-                )
-                // (
-                  if (deps-run final) != [ ] then
-                    {
-                      buildInputs = deps-run final;
-                    }
-                  else
-                    { }
+                        inherit (cargoToml.package) description;
+                      }
+                      // {
+                        description = (cargoToml.package.description or "default description");
+                      }
+                    );
+                  }
+                  // (
+                    if (deps-build final prev) != [ ] then
+                      {
+                        nativeBuildInputs = deps-build final prev;
+                      }
+                    else
+                      { }
+                  )
+                  // (
+                    if (deps-run final) != [ ] then
+                      {
+                        buildInputs = deps-run final prev;
+                      }
+                    else
+                      { }
+                  )
+                  // (pkg-overrides final prev)
                 )
               );
             }

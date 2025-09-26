@@ -14,7 +14,8 @@ Below is a simple example. See the `example/` directory for a full directory of
 this example. `example2` has a more complex example with merging into another
 flake output attribute set.
 
-Note, right now this only handles simple rust projects.
+Right now this only handles simple rust projects and slightly less simple rust
+workspaces. If you need more specific setup, then this flake is not for you.
 
 [ro]: https://github.com/oxalica/rust-overlay
 
@@ -69,25 +70,37 @@ The root for files that are required in the root of the repository. Only needed
 if you are using a large mono-repo with different toolchain files, or if the
 toolchain file is in a separate directory.
 
-### `extra_files = [ ]`
+### `workspace = false`
+
+If the project is a workspace, set this to true to use the `workspace.*` values
+instead of the root values from the TOML file. The `name-override` will also
+have to be set, as `workspace.package.name` is not available.
+
+### `pkgs-overrides = final: prev: {}`
+
+Overrides for the package,
+
+### `extra-files = [ ]`
 
 By default, `Cargo.toml`, `Cargo.lock` and `src/` are included. Use this if you
 need other files or directories.
 
-### `deps-build = pkgs: [ ]`
+### `deps-build = final: prev: [ ]`
 
-Extra packages to include. Should be a function that will take a `pkgs`
-argument. Gets added to `nativeBuildInputs` and to the devshell.
+Extra packages to include. Should be a function that will take `final` and
+`prev` arguments like an overlay function. Gets added to `nativeBuildInputs` and
+to the devshell.
 
-### `deps-run = pkgs: [ ]`
+### `deps-run = final: prev: [ ]`
 
-Extra packages that are needed at runtime. Should be a function that will take a
-`pkgs` argument. Gets added to `buildInputs` and to the devshell.
+Extra packages that are needed at runtime. Should be a function that will take
+`final` and `prev` arguments like an overlay function. Gets added to
+`buildInputs` and to the devshell.
 
 ### `is-default = true`
 
 Will use the package name `default` instead of the cargo projects name or
-`name_override`.
+`name-override`.
 
 ### `toolchain = repo-root + /rust-toolchain.toml`
 
@@ -104,7 +117,7 @@ Overrides for just the devshell, having these in the builder causes the
 toolchain to become a runtime dependency, so it's only added by default to the
 devshell.
 
-### `name_override = (cargoToml.package.name)`
+### `name-override = (cargoToml.package.name)`
 
 Allows overriding the name from the `Cargo.toml` file.
 

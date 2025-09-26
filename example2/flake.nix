@@ -30,7 +30,7 @@
           root = ./.;
         })
         (rust-flake {
-          name_override = "complex-example";
+          name-override = "complex-example";
           root = ./.;
           is-default = false;
           # With system specific packages
