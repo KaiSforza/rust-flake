@@ -178,7 +178,7 @@
                       { }
                   )
                   // (
-                    if (deps-run final) != [ ] then
+                    if (deps-run final prev) != [ ] then
                       {
                         buildInputs = deps-run final prev;
                       }
@@ -202,7 +202,7 @@
             overlays = {
               default = pkg-overlay;
             };
-            all-deps = p: (deps-build p) ++ (deps-run p) ++ (deps-dev p);
+            all-deps = f: p: (deps-build f p) ++ (deps-run f p) ++ (deps-dev f p);
           };
         in
         final-outputs (if is-default then "default" else name);
