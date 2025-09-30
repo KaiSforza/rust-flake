@@ -37,7 +37,7 @@
           lp = left.packages or { };
           rp = right.packages or { };
           overlay-all = (final: prev: (lo final prev) // (ro final prev));
-          all-deps = p: (ld p) ++ (rd p);
+          all-deps = f: p: (ld f p) ++ (rd f p);
         in
         {
           inherit all-deps;
@@ -51,7 +51,7 @@
                 packages = [
                   pkgs.rustToolchain-dev'
                 ]
-                ++ (all-deps pkgs);
+                ++ (all-deps pkgs pkgs);
               };
             }
           );
