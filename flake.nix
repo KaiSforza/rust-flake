@@ -31,8 +31,8 @@
           lo = left.overlays.default or (_: _: { });
           ro = right.overlays.default or (_: _: { });
           # Dependencies
-          ld = left.all-deps or (_: [ ]);
-          rd = right.all-deps or (_: [ ]);
+          ld = left.all-deps or (_: _: [ ]);
+          rd = right.all-deps or (_: _: [ ]);
           # Packages
           lp = left.packages or { };
           rp = right.packages or { };

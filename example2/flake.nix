@@ -34,10 +34,10 @@
           root = ./.;
           is-default = false;
           # With system specific packages
-          deps-build = p: with p; ([ hello ] ++ (if stdenv.isLinux then [ fuse3 ] else [ darwin.icu ]));
-          deps-run = p: with p; [ ponysay ];
-          deps-dev = p: with p; [ just ];
-          dev-overrides = {
+          deps-build = _: p: with p; ([ hello ] ++ (if stdenv.isLinux then [ fuse3 ] else [ darwin.icu ]));
+          deps-run = _: p: with p; [ ponysay ];
+          deps-dev = _: p: with p; [ just ];
+          dev-overrides = _: _: {
             extensions = [
               "rust-analyzer"
               "clippy"
