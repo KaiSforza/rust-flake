@@ -10,6 +10,11 @@
     inputs:
     let
       inherit (inputs.nixpkgs.lib) recursiveUpdate;
+      # Optional function or just `f`
+      ofunc =
+        f: x: y:
+        if (builtins.isFunction f) then (f x y) else (f);
+
       # This file is laid out a bit backwards for readability's sake.
       # This is the final output, it's going to be a nice output of all the
       # packages, with the devshell and overlays merged into one output.
@@ -28,16 +33,16 @@
 
           # Defaults from the left and right that we need
           # Overlays
-          lo = left.overlays.default or (_: _: { });
-          ro = right.overlays.default or (_: _: { });
+          lo = left.overlays.default or { };
+          ro = right.overlays.default or { };
           # Dependencies
-          ld = left.all-deps or (_: _: [ ]);
-          rd = right.all-deps or (_: _: [ ]);
+          ld = left.all-deps or [ ];
+          rd = right.all-deps or [ ];
           # Packages
           lp = left.packages or { };
           rp = right.packages or { };
-          overlay-all = (final: prev: (lo final prev) // (ro final prev));
-          all-deps = f: p: (ld f p) ++ (rd f p);
+          overlay-all = (final: prev: (ofunc lo final prev) // (ofunc ro final prev));
+          all-deps = f: p: (ofunc ld f p) ++ (ofunc rd f p);
         in
         {
           inherit all-deps;
@@ -71,6 +76,7 @@
             };
           }
         );
+
       rust-flake =
         {
           # The root of your rust crate
@@ -83,11 +89,11 @@
           # The `deps-*` variables should be functions that take a package set as
           # a variable.
           # Dependencies required only for the build (`nativeBuildInputs`)
-          deps-build ? _: _: [ ],
+          deps-build ? [ ],
           # Runtime dependencies (`buildInputs`)
-          deps-run ? _: _: [ ],
+          deps-run ? [ ],
           # Development dependencies (for the devShells)
-          deps-dev ? _: _: [ ],
+          deps-dev ? [ ],
           # Will also create a default output.
           is-default ? true,
           # Specify an alternate toolchain file (useful for sub-crates)
@@ -99,7 +105,7 @@
               "rust-analyzer"
             ];
           },
-          pkg-overrides ? _: _: { },
+          pkg-overrides ? { },
           ...
         }@rustArgs:
         let
@@ -143,8 +149,12 @@
               # Uses the `foo'` notation because otherwise the recursion is nasty.
               # Split into two different toolchains, one with stuff for development,
               # and the other only containing the base toolchain.
-              rustToolchain' = (prev.rust-bin.fromRustupToolchainFile toolchain).override toolchain-overrides;
-              rustToolchain-dev' = final.rustToolchain'.override toolchain-overrides // dev-overrides;
+              rustToolchain' = (prev.rust-bin.fromRustupToolchainFile toolchain).override (
+                ofunc toolchain-overrides final prev
+              );
+              rustToolchain-dev' = final.rustToolchain'.override (
+                (ofunc toolchain-overrides final prev) // (ofunc dev-overrides final prev)
+              );
               rustPlatform' = final.makeRustPlatform {
                 cargo = final.rustToolchain';
                 rustc = final.rustToolchain';
@@ -170,22 +180,22 @@
                     );
                   }
                   // (
-                    if (deps-build final prev) != [ ] then
+                    if (ofunc deps-build final prev) != [ ] then
                       {
-                        nativeBuildInputs = deps-build final prev;
+                        nativeBuildInputs = ofunc deps-build final prev;
                       }
                     else
                       { }
                   )
                   // (
-                    if (deps-run final prev) != [ ] then
+                    if (ofunc deps-run final prev) != [ ] then
                       {
-                        buildInputs = deps-run final prev;
+                        buildInputs = ofunc deps-run final prev;
                       }
                     else
                       { }
                   )
-                  // (pkg-overrides final prev)
+                  // (ofunc pkg-overrides final prev)
                 )
               );
             }
@@ -202,7 +212,7 @@
             overlays = {
               default = pkg-overlay;
             };
-            all-deps = f: p: (deps-build f p) ++ (deps-run f p) ++ (deps-dev f p);
+            all-deps = f: p: (ofunc deps-build f p) ++ (ofunc deps-run f p) ++ (ofunc deps-dev f p);
           };
         in
         final-outputs (if is-default then "default" else name);
