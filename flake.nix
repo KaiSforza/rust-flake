@@ -86,6 +86,8 @@
           workspace ? false,
           # Extra files to include in the source
           extra-files ? [ ],
+          # Extra files to _exclude_ in the source
+          exclude-files ? [ ],
           # The `deps-*` variables should be functions that take a package set as
           # a variable.
           # Dependencies required only for the build (`nativeBuildInputs`)
@@ -125,20 +127,21 @@
             toSource
             intersection
             unions
+            difference
             maybeMissing
             ;
           rustSrc = toSource {
             inherit root;
             fileset = (
               intersection root (
-                unions (
+                difference (unions (
                   [
                     (maybeMissing (root + /Cargo.toml))
                     (maybeMissing (root + /Cargo.lock))
                     (maybeMissing (root + /src))
                   ]
                   ++ (map maybeMissing extra-files)
-                )
+                )) exclude-files
               )
             );
           };
@@ -171,8 +174,6 @@
                       {
                         homepage = cargoToml.package.repository or "https://example.com";
                         mainProgram = name;
-
-                        inherit (cargoToml.package) description;
                       }
                       // {
                         description = (cargoToml.package.description or "default description");
