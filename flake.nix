@@ -141,7 +141,7 @@
                     (maybeMissing (root + /src))
                   ]
                   ++ (map maybeMissing extra-files)
-                )) exclude-files
+                )) (unions exclude-files)
               )
             );
           };
